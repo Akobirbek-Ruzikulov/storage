@@ -313,14 +313,51 @@ def by_balance(customer_id):
     print(f"✅ Hisobingiz {soqqa} so'mga to'ldirildi!")
     view_balance(customer_id)
 
+def add_admin():
+    secret_code="6772802"
+    code=input("🔑 Maxfiy kodni kiriting:")
+    if code != secret_code:
+        print("⚠️ Noto'g'ri kod. Admin qo'shish mumkin emas!")
+        return
+
+    username = input("👤 Yangi admin ismini kiriting: ")
+    password = input("🔑 Parolni kiriting: ")
+    cursor.execute("INSERT INTO admin (name,password) VALUES (%s,%s)",(username,password))
+    conn.commit()
+    print(f"✅ Admin {username} qo'shildi!")
+
 def check_admin():
-    username = input("👤 Ism: ")
-    password = input("🔑 Parol: ")
-    cursor.execute("""
-        SELECT * FROM admin
-        WHERE name = %s AND password = %s
-    """, (username,password))
-    return cursor.fetchone()
+    cursor.execute("SELECT COUNT(*) FROM admin")
+    admin_count=cursor.fetchone()[0]
+
+    if admin_count ==0:
+        print("⚠️ Hali hech qanday admin mavjud emas!")
+        confirm = input("🛑 Admin profilini qo‘shmoqchimisiz? (yes/no): ").strip().lower()
+
+        if confirm == "yes":
+            secret_code = "6772802"
+            code_input = input("✅ Maxsus kodni kiriting: ")
+
+            if code_input == secret_code:
+                username = input("👤 Yangi admin ismini kiriting: ")
+                password = input("🔑 Parolni kiriting: ")
+
+                cursor.execute("INSERT INTO admin (name, password) VALUES (%s, %s)", (username, password))
+                conn.commit()
+                print("✅ Admin muvaffaqiyatli qo‘shildi!")
+            else:
+                print("❌ Xato kod! Admin qo‘shilmadi.")
+        else:
+            print("❌ Admin qo‘shilmadi.")
+
+    else:
+        username = input("👤 Ism: ")
+        password = input("🔑 Parol: ")
+        cursor.execute("""
+            SELECT * FROM admin
+            WHERE name = %s AND password = %s
+        """, (username,password))
+        return cursor.fetchone()
 
 create_table()
 
@@ -341,14 +378,15 @@ def customer_login():
 def admin_menu():
     while True:
         print("\n📌 ADMIN PANEL")
-        print("1. Tur qo'shish:")
-        print("2. Turlarni ko'rish:")
-        print("3. Tovar qo‘shish:")
-        print("4. Tovar o'chirish:")
-        print("5. Tovarlarni ko‘rish:")
-        print("6. Buyurtmalarni ko‘rish:")
-        print("7. Mijoz buyurtmalarini ko‘rish:")
-        print("8. Mijozlarni ko'rish:")
+        print("1. Tur qo'shish ")
+        print("2. Turlarni ko'rish ")
+        print("3. Tovar qo‘shish ")
+        print("4. Tovar o'chirish ")
+        print("5. Tovarlarni ko‘rish ")
+        print("6. Buyurtmalarni ko‘rish ")
+        print("7. Mijoz buyurtmalarini ko‘rish ")
+        print("8. Mijozlarni ko'rish ")
+        print("9. Yangi admin qo'shish ")
         print("0. Chiqish")
         choice = input("Tanlang: ")
         if choice == "0":
@@ -369,6 +407,8 @@ def admin_menu():
             view_orders_by_cus()
         elif choice == "8":
             view_cust()
+        elif choice == "9":
+            add_admin()
         else:
             print("⚠️ Xato tanlov!")
 
